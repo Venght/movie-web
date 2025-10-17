@@ -1,6 +1,8 @@
-import React from 'react'
+import {useState} from 'react'
+import Search from './assets/search.jsx'
 
 const App = () => {
+  const [searchTerm, setSearchTerm] = useState('Golden Voice')
   return ( 
    <main>
     <div className = "pattern"></div>
@@ -12,6 +14,8 @@ const App = () => {
           <span className="text-gradient">Find movies</span> here for free
         </h1>
       </header>
+
+      <Search searchTerm = {searchTerm} setSearchTerm = {setSearchTerm} />
     </div>
     </main>
   )
