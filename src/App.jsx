@@ -2,7 +2,7 @@ import {useState} from 'react'
 import Search from './assets/search.jsx'
 
 const App = () => {
-  const [searchTerm, setSearchTerm] = useState('Golden Voice')
+  const [searchTerm, setSearchTerm] = useState('')
   return ( 
    <main>
     <div className = "pattern"></div>
@@ -16,7 +16,8 @@ const App = () => {
       </header>
 
       <Search searchTerm = {searchTerm} setSearchTerm = {setSearchTerm} />
-    </div>
+      <h1 className='text-white'>{searchTerm} </h1>
+    </div> 
     </main>
   )
 }
