@@ -1,6 +1,9 @@
 import {useEffect, useState} from 'react'
 import Search from './components/Search.jsx'
-import Spinner from './components/Spinner.jsx';
+import Spinner from './components/Spinner.jsx'
+import MovieCard from './components/MovieCard.jsx'
+import { useDebounce } from 'react-use'
+import { updateSearchMetrics } from './appwrite.js'
 
 const API_URL = 'https://api.themoviedb.org/3';
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY
@@ -17,16 +20,19 @@ const App = () => {
   const [searchTerm, setSearchTerm] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [movies, setMovies] = useState([])
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
+  const [debouncedTerm, setDebouncedTerm] = useState('');
+
+  useDebounce(() => setDebouncedTerm(searchTerm), 700, [searchTerm]);
   
-  const fetchMovies = async () => {
+  const fetchMovies = async (query = '') => {
     setLoading(true);
     setErrorMessage('');
 
     try {
-      /*onst endpoint = `${API_URL}/discover/movie?sort_by=popularity.desc` */
-      const endpoint = searchTerm
-        ? `${API_URL}/search/movie?query=${encodeURIComponent(searchTerm)}`
+
+      const endpoint = query
+        ? `${API_URL}/search/movie?query=${encodeURIComponent(query)}`
         : `${API_URL}/discover/movie?sort_by=popularity.desc`;
 
       const response = await fetch(endpoint, API_OPTIONS)
@@ -41,6 +47,10 @@ const App = () => {
       }
 
       setMovies(data.results || []);
+
+      if(query && data.results.length > 0) {
+        await updateSearchMetrics(query, data.results[0]);
+      }
      
     } catch (error) {
       console.error('Error fetching movies:', error);
@@ -48,14 +58,17 @@ const App = () => {
       setMovies([]);
       return;
     } finally {
-      setLoading(true);
+      setLoading(false);
     }
     
   }
   useEffect(() => {
-    console.log('useEffect ran');
-    fetchMovies();
-  }, []);
+    if (debouncedTerm === '') {
+      fetchMovies('')
+    } else {
+      fetchMovies(debouncedTerm);
+    }
+  }, [debouncedTerm]);
 
   return ( 
    <main>
@@ -73,7 +86,7 @@ const App = () => {
       </header>
 
       <section className='all-movies'>
-        <h2>All movies</h2>
+        <h2 className = "mt-[50px]">All movies</h2>
 
         {loading ? (
           <Spinner />
@@ -82,7 +95,7 @@ const App = () => {
         ) : (
           <ul>
             {movies.map((movie) => (
-              <p key={movie.id}className="text-white">{movie.title}</p>
+              <MovieCard key={movie.id} movie={movie} />
               ))}
           </ul>
         )}
