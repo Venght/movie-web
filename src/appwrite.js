@@ -38,7 +38,7 @@ export const updateSearchMetrics = async (searchTerm, movie) => {
  }
 }
 
-/* export const getTrendingMovies = async () => {
+export const getTrendingMovies = async () => {
  try {
   const result = await database.listDocuments(DATABASE_ID, COLLECTION_ID, [
     Query.limit(5),
@@ -49,4 +49,4 @@ export const updateSearchMetrics = async (searchTerm, movie) => {
  } catch (error) {
   console.error(error);
  }
-} */
+} 

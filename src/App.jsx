@@ -3,7 +3,7 @@ import Search from './components/Search.jsx'
 import Spinner from './components/Spinner.jsx'
 import MovieCard from './components/MovieCard.jsx'
 import { useDebounce } from 'react-use'
-import { updateSearchMetrics } from './appwrite.js'
+import { getTrendingMovies, updateSearchMetrics } from './appwrite.js'
 
 const API_URL = 'https://api.themoviedb.org/3';
 const API_KEY = import.meta.env.VITE_TMDB_API_KEY
@@ -22,6 +22,7 @@ const App = () => {
   const [movies, setMovies] = useState([])
   const [loading, setLoading] = useState(false)
   const [debouncedTerm, setDebouncedTerm] = useState('');
+  const [trendingMovies, setTrendingMovies] = useState([])
 
   useDebounce(() => setDebouncedTerm(searchTerm), 700, [searchTerm]);
   
@@ -62,6 +63,18 @@ const App = () => {
     }
     
   }
+
+  const loadTrendingMovies = async () => {
+    try {
+      const movies = await getTrendingMovies();
+
+      setTrendingMovies(movies);
+    } catch (error) {
+      console.error('Error fetching trending movies:', error);
+      setErrorMessage('Failed to fetch trending movies. Please try again later.');
+    }
+  }
+
   useEffect(() => {
     if (debouncedTerm === '') {
       fetchMovies('')
@@ -69,6 +82,10 @@ const App = () => {
       fetchMovies(debouncedTerm);
     }
   }, [debouncedTerm]);
+
+  useEffect( () => {
+    loadTrendingMovies();
+  }, []);
 
   return ( 
    <main>
@@ -85,8 +102,23 @@ const App = () => {
 
       </header>
 
+      {trendingMovies.length > 0 && (
+          <section className="trending">
+            <h2>Trending Movies</h2>
+
+            <ul>
+              {trendingMovies.map((movie, index) => (
+                <li key={movie.$id}>
+                  <p>{index + 1}</p>
+                  <img src={movie.poster_url} alt={movie.title} />
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
       <section className='all-movies'>
-        <h2 className = "mt-[50px]">All movies</h2>
+        <h2>All movies</h2>
 
         {loading ? (
           <Spinner />
